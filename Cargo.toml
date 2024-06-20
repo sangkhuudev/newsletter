@@ -3,4 +3,30 @@ name = "newsletter"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+path = "src/main.rs"
+name = "newsletter"
+
 [dependencies]
+actix-web = "4.7.0"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+reqwest = {version = "0.12.5", features = ["json"] }
+serde = {version = "1.0.203", features = ["derive"]}
+config = "0.14.0"
+uuid = { version = "1.4.1", features = ["v4", "serde"] }
+chrono = "0.4.38"
+
+[dependencies.sqlx]
+version = "0.7.4"
+default-features = false
+features = [
+    "postgres", 
+    "runtime-tokio-rustls",
+    "macros",
+    "chrono",
+    "migrate",
+    "uuid",    
+]
