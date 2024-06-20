@@ -1,8 +1,7 @@
-use std::net::TcpListener;
 use newsletter::configuration::get_configuration;
-use sqlx:: {PgConnection, Connection};
 use reqwest::Client;
-
+use sqlx::{Connection, PgConnection};
+use std::net::TcpListener;
 
 fn spawn_app() -> String {
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind to random port");
@@ -36,8 +35,8 @@ async fn subscribe_returns_a_200_for_valid_form() {
     let connection_string = settings.database.connection_string();
     let mut connection = PgConnection::connect(&connection_string)
         .await
-        .expect("Failed to connect to Postgres");    
-    
+        .expect("Failed to connect to Postgres");
+
     // Act
     let body = "name=sang%20khuu&email=rustdev%40gmail.com";
     let response = client
@@ -54,11 +53,9 @@ async fn subscribe_returns_a_200_for_valid_form() {
     //     .fetch_one(&mut connection)
     //     .await
     //     .expect("Failed to fetch saved subscription");
-    
+
     // assert_eq!(saved.email, "rustdev@gmail.com");
     // assert_eq!(saved.name, "sang khuu");
-    
-
 }
 
 #[tokio::test]
@@ -66,12 +63,12 @@ async fn subscribe_returns_a_400_for_missing_form() {
     // Arrange
     let address = spawn_app();
     let client = Client::new();
-    let test_cases = vec!(
+    let test_cases = vec![
         ("name=sang%20khuu", "missing the email"),
         ("email=ursula_le_guin%40gmail.com", "missing the name"),
-        ("", "missing both name and email")
-    );
-    
+        ("", "missing both name and email"),
+    ];
+
     for (invalid_body, error_message) in test_cases {
         let response = client
             .post(&format!("{}/subscriptions", &address))
@@ -80,7 +77,7 @@ async fn subscribe_returns_a_400_for_missing_form() {
             .send()
             .await
             .expect("Failed to execute the request.");
-        
+
         assert_eq!(
             400,
             response.status().as_u16(),
@@ -90,6 +87,3 @@ async fn subscribe_returns_a_400_for_missing_form() {
         )
     }
 }
-
-
-
