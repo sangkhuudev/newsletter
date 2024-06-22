@@ -2,7 +2,6 @@ use newsletter::configuration::{get_configuration, DatabaseSettings};
 use newsletter::telemetry::{get_subscriber, init_subscriber};
 use once_cell::sync::Lazy;
 use reqwest::Client;
-use secrecy::ExposeSecret;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use std::net::TcpListener;
 use uuid::Uuid;
@@ -49,17 +48,16 @@ async fn spawn_app() -> TestApp {
 // 3.Embedded that connection into a db pool
 async fn configure_database(db_setting: &DatabaseSettings) -> PgPool {
     // Create database
-    let mut connection =
-        PgConnection::connect(&db_setting.connection_string_without_db().expose_secret())
-            .await
-            .expect("Failed to establish new connection");
+    let mut connection = PgConnection::connect_with(&db_setting.without_db())
+        .await
+        .expect("Failed to establish new connection");
 
     connection
         .execute(format!(r#"CREATE DATABASE "{}";"#, db_setting.database_name).as_str())
         .await
         .expect("Failed to create database");
     // Migrate database
-    let connection_pool = PgPool::connect(&db_setting.connection_string().expose_secret())
+    let connection_pool = PgPool::connect_with(db_setting.with_db())
         .await
         .expect("Failed to connect to Postgres");
     sqlx::migrate!("./migrations")
